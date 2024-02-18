@@ -1,6 +1,6 @@
 # ZippiEFI
 
-ZippiEFI is a EFI bootloader that can chain load other EFI applications.\
+ZippiEFI is an UEFI bootloader that can chain load other EFI applications.\
 It is designed based on the principles of minimalism and efficiency.
 
 # Projected Features
