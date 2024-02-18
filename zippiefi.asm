@@ -22,11 +22,13 @@ call openFile
 ret
 
 getTextMode:
+;Read mode number
 mov rdx,qword [efiSystemTable]
 mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
 mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.Mode]
 mov eax,[rax+4]
 push rax
+;Get rows and columns
 mov rdx,qword [efiSystemTable]
 mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
 mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.QueryMode]
@@ -37,9 +39,43 @@ sub rsp,32
 call rax
 add rsp,32
 mov r8,[textColumns]
+call numToString
+mov rsi,numberBuffer
+call printString
 mov r9,[textRows]
+mov r8,r9
+call numToString
+mov rsi,numberBuffer
+call printString
 cli
 jmp $
+ret
+
+numToString:
+;Clear number buffer
+mov rcx,5
+mov eax,0
+mov rdi,numberBuffer
+repe stosd
+;Convert each digit to ASCII then save it into stack
+xchg rax,r8
+mov rcx,0
+loopSaveNumberStack:
+mov rdx,0
+mov rbx,10
+div rbx
+add dl,30h
+push dx
+inc rcx
+test rax,rax
+jnz loopSaveNumberStack
+;Save number into buffer
+mov rdi,numberBuffer
+loopSaveNumberBuffer:
+pop ax
+stosb
+inc rdi
+loop loopSaveNumberBuffer
 ret
 
 initEfiFileSystem:
