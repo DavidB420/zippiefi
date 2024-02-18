@@ -9,12 +9,37 @@ main:
 ;Save EFI system table that is loaded into rdx
 mov qword [efiSystemTable],rdx
 mov qword [efiImageHandle],rcx
+;Query text mode
+call getTextMode
 ;Output welcome message
 mov rsi,welcomeStr
 call printString
+cli
+jmp $
 ;Begin to load the file system
-;call initEfiFileSystem
-;call openFile
+call initEfiFileSystem
+call openFile
+ret
+
+getTextMode:
+mov rdx,qword [efiSystemTable]
+mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
+mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.Mode]
+mov eax,[rax+4]
+push rax
+mov rdx,qword [efiSystemTable]
+mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
+mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.QueryMode]
+pop rdx
+lea r8,[textColumns]
+lea r9,[textRows]
+sub rsp,32
+call rax
+add rsp,32
+mov r8,[textColumns]
+mov r9,[textRows]
+cli
+jmp $
 ret
 
 initEfiFileSystem:
@@ -159,6 +184,8 @@ efiOSBufferHandle dq 0
 efiReadSize dq 1216
 efiKeyData dq 0
 efiFileInfo dq 0
+textRows dq 0
+textColumns dq 0
 currentHighestRes dq 0
 currentHighestIndex db 0
 frameBufferPPS dd 0
@@ -167,6 +194,7 @@ EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID db 0x22, 0x5b, 0x4e, 0x96, 0x59, 0x64, 0xd2
 EFI_FILE_INFO_ID_GUID db 0x92, 0x6e, 0x57, 0x09, 0x3f, 0x6d, 0xd2, 0x11, 0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b
 efiFileInfoBufferSize dq 128
 efiFileInfoBuffer: times 128 db 0
+numberBuffer: times 21 db 0
 blockiouuid db EFI_BLOCK_IO_PROTOCOL_UUID
 gopguid db EFI_GRAPHICS_OUTPUT_PROTOCOL_UUID
 EFI_FILE_MODE_READ = 0x0000000000000001
