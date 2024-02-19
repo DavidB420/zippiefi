@@ -38,15 +38,6 @@ lea r9,[textRows]
 sub rsp,32
 call rax
 add rsp,32
-mov r8,[textColumns]
-call numToString
-mov rsi,numberBuffer
-call printString
-mov r9,[textRows]
-mov r8,r9
-call numToString
-mov rsi,numberBuffer
-call printString
 cli
 jmp $
 ret
@@ -217,6 +208,26 @@ pop rdx
 pop rcx
 pop rbx
 pop rax
+ret
+
+centeredPrintString:
+mov rax,[textColumns]
+shr rax,1
+ret
+
+getUnicodeStringLength:
+push rax
+push rsi
+mov rcx,0
+loopReadStringValues:
+lodsw
+test ax,ax
+jz gotStringLength
+inc rcx
+jmp loopReadStringValues
+gotStringLength:
+pop rax
+pop rsi
 ret
 
 printString:
