@@ -1,3 +1,5 @@
+;ZippieEFI
+;Copyright (C) 2024 David Badiei
 format pe64 efi
 entry main
 
@@ -13,7 +15,8 @@ mov qword [efiImageHandle],rcx
 call getTextMode
 ;Output welcome message
 mov rsi,welcomeStr
-call printString
+mov rbx,0
+call centeredPrintString
 cli
 jmp $
 ;Begin to load the file system
@@ -21,6 +24,7 @@ call initEfiFileSystem
 call openFile
 ret
 
+;getTextMode
 getTextMode:
 ;Read mode number
 mov rdx,qword [efiSystemTable]
@@ -38,10 +42,10 @@ lea r9,[textRows]
 sub rsp,32
 call rax
 add rsp,32
-cli
-jmp $
 ret
 
+;numToString
+;IN: r8 = number
 numToString:
 push rax
 push rbx
@@ -152,13 +156,16 @@ call qword [rcx+EFI_FILE_PROTOCOL.Read]
 add rsp,32
 ret
 
+;waitForAnyKey
 waitForAnyKey:
+;Reset keyboard hardware
 mov rdx,1
 mov rcx,[efiSystemTable]
 mov rcx,[rcx+EFI_SYSTEM_TABLE.ConIn]
 sub rsp,32
 call qword [rcx+EFI_SIMPLE_TEXT_INPUT_PROTOCOL.Reset]
 add rsp,32
+;Poll until the key is read
 loopwaitforkeypress:
 lea rdx,[efiKeyData]
 mov rcx,[efiSystemTable]
@@ -171,6 +178,7 @@ cmp rax,6 ;Check if its not ready
 je loopwaitforkeypress
 ret
 
+;resetPC
 resetPC:
 ;Reset using 8042 method (if possible)
 mov al,0xfe
@@ -186,12 +194,15 @@ mov ecx,0
 call rax
 ret
 
+;setCursorPos
+;IN: RAX = column position, RBX = row position
 setCursorPos:
 push rax
 push rbx
 push rcx
 push rdx
 push r8
+;Save row and column into proper argument registers
 push rbx
 push rax
 mov rdx,qword [efiSystemTable]
@@ -210,14 +221,31 @@ pop rbx
 pop rax
 ret
 
+;centeredPrintString
+;IN: RSI = string pointer, RBX = Row to display string on
 centeredPrintString:
+push rax
+push rcx
+;Calculate and set starting point so string is at the center
 mov rax,[textColumns]
 shr rax,1
+call getUnicodeStringLength
+shr rcx,1
+sub rax,rcx
+call setCursorPos
+;Display string using the regular function
+call printString
+pop rcx
+pop rax
 ret
 
+;getUnicodeStringLength
+;IN: RSI = string pointer
+;OUT: RCX = length of string
 getUnicodeStringLength:
 push rax
 push rsi
+;Character is word lengthed, keep counting until 0x0000
 mov rcx,0
 loopReadStringValues:
 lodsw
@@ -230,6 +258,8 @@ pop rax
 pop rsi
 ret
 
+;printString
+;IN: RSI = string pointer
 printString:
 push rdx
 push rcx
