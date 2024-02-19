@@ -52,6 +52,11 @@ jmp $
 ret
 
 numToString:
+push rax
+push rbx
+push rcx
+push rdx
+push rdi
 ;Clear number buffer
 mov rcx,5
 mov eax,0
@@ -76,6 +81,11 @@ pop ax
 stosb
 inc rdi
 loop loopSaveNumberBuffer
+pop rdi
+pop rdx
+pop rcx
+pop rbx
+pop rax
 ret
 
 initEfiFileSystem:
@@ -183,6 +193,30 @@ mov r8d,0
 mov edx,0
 mov ecx,0
 call rax
+ret
+
+setCursorPos:
+push rax
+push rbx
+push rcx
+push rdx
+push r8
+push rbx
+push rax
+mov rdx,qword [efiSystemTable]
+mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
+mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetCursorPosition]
+pop rdx
+pop r8
+;Setup shadow space for GPRs
+sub rsp,32
+call rax
+add rsp,32
+pop r8
+pop rdx
+pop rcx
+pop rbx
+pop rax
 ret
 
 printString:
