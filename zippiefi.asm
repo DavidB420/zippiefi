@@ -1,4 +1,4 @@
-;ZippieEFI
+;ZippiEFI
 ;Copyright (C) 2024 David Badiei
 format pe64 efi
 entry main
