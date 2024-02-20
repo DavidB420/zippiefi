@@ -226,15 +226,29 @@ ret
 centeredPrintString:
 push rax
 push rcx
+push rbx
+;Run through each line, must use 0x0000, 0x00ff as newline seperator
+loopPrintCenteredString:
 ;Calculate and set starting point so string is at the center
 mov rax,[textColumns]
 shr rax,1
 call getUnicodeStringLength
+push rcx
 shr rcx,1
 sub rax,rcx
 call setCursorPos
 ;Display string using the regular function
+sub rsp,8
 call printString
+add rsp,8
+pop rcx
+shl rcx,1
+add rsi,rcx
+add rsi,4
+inc rbx
+cmp word [rsi-2],0x00ff
+je loopPrintCenteredString
+pop rbx
 pop rcx
 pop rax
 ret
@@ -245,17 +259,21 @@ ret
 getUnicodeStringLength:
 push rax
 push rsi
-;Character is word lengthed, keep counting until 0x0000
+;Character is word lengthed, keep counting until end of string or newline
 mov rcx,0
 loopReadStringValues:
 lodsw
 test ax,ax
 jz gotStringLength
+cmp ax,0x0d
+je gotStringLength
+cmp ax,0xff
+je gotStringLength
 inc rcx
 jmp loopReadStringValues
 gotStringLength:
-pop rax
 pop rsi
+pop rax
 ret
 
 ;printString
@@ -282,7 +300,7 @@ ret
 
 section '.data' readable writable
 
-welcomeStr du 'ZippiEFI', 0xD, 0xA, 'Copyright (C) 2024 David Badiei', 0xD, 0xA, 'Please select an option from below', 0
+welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, 'Please select an option from below', 0
 errorStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 'Press any key to reboot...',0
 efiSystemTable dq 0
 efiLoadedImage dq 0
