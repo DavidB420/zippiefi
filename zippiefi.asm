@@ -16,6 +16,7 @@ mov qword [efiSystemTable],rdx
 mov qword [efiImageHandle],rcx
 ;Query text mode
 call getTextMode
+;Load file
 call initEfiFileSystem
 mov r8,configFN
 call openFile
