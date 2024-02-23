@@ -16,6 +16,9 @@ mov qword [efiSystemTable],rdx
 mov qword [efiImageHandle],rcx
 ;Query text mode
 call getTextMode
+call initEfiFileSystem
+mov r8,configFN
+call openFile
 ;Output welcome message
 mov rsi,welcomeStr
 mov rbx,0
@@ -64,14 +67,14 @@ sub rsp,32
 call qword [rcx+EFI_FILE_PROTOCOL.Open]
 add rsp,32
 cmp rax,0
-je skiperrorloadingkernel
+je skiperrorloadingfile
 sub rsp,8
 mov rsi,errorStr
 call printString
 add rsp,8
 call waitForAnyKey
 call resetPC
-skiperrorloadingkernel:
+skiperrorloadingfile:
 ;Get file size
 mov rcx,[efiFileHandle]
 mov rdx,EFI_FILE_INFO_ID_GUID
@@ -85,7 +88,7 @@ mov qword [efiReadSize],r9
 ;Allocate memory pool
 mov rcx,2
 mov rdx,qword [efiReadSize]
-lea r8,[efiOSBufferHandle]
+lea r8,[efiFileBufferHandle]
 mov r9,qword [efiSystemTable]
 mov r9,[r9+EFI_SYSTEM_TABLE.BootServices]
 sub rsp,32
@@ -94,7 +97,7 @@ add rsp,32
 ;Read file
 mov rcx,[efiFileHandle]
 lea rdx,[efiReadSize]
-mov r8,[efiOSBufferHandle]
+mov r8,[efiFileBufferHandle]
 sub rsp,32
 call qword [rcx+EFI_FILE_PROTOCOL.Read]
 add rsp,32
@@ -142,6 +145,7 @@ section '.data' readable writable
 
 welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, 'Please select an option from below', 0
 errorStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 'Press any key to reboot...',0
+configFN du 'config.json',0
 efiSystemTable dq 0
 efiLoadedImage dq 0
 efiImageHandle dq 0
@@ -149,7 +153,7 @@ efiDevicePathHandle dq 0
 efiVolumeHandle dq 0
 efiRootFSHandle dq 0
 efiFileHandle dq 0
-efiOSBufferHandle dq 0
+efiFileBufferHandle dq 0
 efiReadSize dq 1216
 efiKeyData dq 0
 efiFileInfo dq 0
