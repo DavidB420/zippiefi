@@ -30,6 +30,21 @@ jmp $
 ret
 
 loadEfiOptions:
+;Check if we can read json signature
+mov rsi,[efiFileBufferHandle]
+mov rax,qword [rsi]
+mov rbx,0x45495050495A2F2F
+cmp rax,rbx
+je skipfailedefisignature
+sub rsp,8
+mov rsi,errorParsingStr
+call printString
+mov rsi,rebootStr
+call printString
+add rsp,8
+call waitForAnyKey
+call resetPC
+skipfailedefisignature:
 ret
 
 initEfiFileSystem:
@@ -71,7 +86,9 @@ add rsp,32
 cmp rax,0
 je skiperrorloadingfile
 sub rsp,8
-mov rsi,errorStr
+mov rsi,errorLoadingStr
+call printString
+mov rsi,rebootStr
 call printString
 add rsp,8
 call waitForAnyKey
@@ -146,7 +163,9 @@ ret
 section '.data' readable writable
 
 welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, 'Please select an option from below', 0
-errorStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 'Press any key to reboot...',0
+errorLoadingStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 0
+errorParsingStr du 0x0d, 0x0a, 'Error parsing CONFIG.JSON!', 0xd, 0xa, 0
+rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
 efiSystemTable dq 0
 efiLoadedImage dq 0
