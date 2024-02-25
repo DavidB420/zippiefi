@@ -1,5 +1,11 @@
 //ZIPPIEFI
 
 {
-  "countdown": 1
+  "countdown": 1,
+  
+  "0": {
+    "drive": 0,
+    "fn": "bootx64.efi",
+    "type": 0
+  }
 }

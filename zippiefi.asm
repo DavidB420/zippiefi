@@ -24,11 +24,12 @@ call openFile
 mov rsi,welcomeStr
 mov rbx,0
 call centeredPrintString
+call loadEfiOptions
 cli
 jmp $
-;Begin to load the file system
-call initEfiFileSystem
-call openFile
+ret
+
+loadEfiOptions:
 ret
 
 initEfiFileSystem:
