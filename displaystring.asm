@@ -2,6 +2,23 @@
 ;Display and string
 ;Copyright (C) 2024 David Badiei
 
+;strcmp
+;IN: RSI = First string (ASCII), RDI = Second string (ASCII)
+;OUT: AL = 0 (match) 1 (not a match)
+strcmp:
+mov al,0
+loopReadByteCmp:
+mov bl,byte [rsi]
+cmp rsi,byte [rdi]
+je skipNotMatch
+mov al,1
+skipNotMatch:
+inc rsi
+inc rdi
+cmp bl,0
+jne loopReadByteCmp
+ret
+
 ;getTextMode
 getTextMode:
 ;Read mode number

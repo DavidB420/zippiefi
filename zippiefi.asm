@@ -45,8 +45,27 @@ add rsp,8
 call waitForAnyKey
 call resetPC
 skipfailedefisignature:
+;Find starting of the json
+loopFindStartJson:
+lodsb
+cmp al,'{'
+jne loopFindStartJson
+;Read and interpret json
+loopReadJson
+lodsb
+cmp al,'"'
+jne skipReadID
+;Copy tag to buffer for comparison
+mov rdi,jsonBuffer
+loopCopyTag:
+movsb
+cmp al,'"'
+jne loopCopyTag
+skipReadID:
+jmp loopReadJson
 ret
 
+;initEfiFileSystem
 initEfiFileSystem:
 ;Get loaded image pointer
 mov rcx,[efiImageHandle]
@@ -75,6 +94,7 @@ call qword [rcx+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL.OpenVolume]
 add rsp,32
 ret
 
+;openFile
 openFile:
 ;Open file and check if file loaded successfully
 mov rcx,[efiRootFSHandle]
@@ -167,6 +187,7 @@ errorLoadingStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 0
 errorParsingStr du 0x0d, 0x0a, 'Error parsing CONFIG.JSON!', 0xd, 0xa, 0
 rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
+countdownJSON db 'countdown',0
 efiSystemTable dq 0
 efiLoadedImage dq 0
 efiImageHandle dq 0
@@ -189,6 +210,7 @@ EFI_FILE_INFO_ID_GUID db 0x92, 0x6e, 0x57, 0x09, 0x3f, 0x6d, 0xd2, 0x11, 0x8e,0x
 efiFileInfoBufferSize dq 128
 efiFileInfoBuffer: times 128 db 0
 numberBuffer: times 21 db 0
+jsonBuffer: times 21 db 0
 blockiouuid db EFI_BLOCK_IO_PROTOCOL_UUID
 gopguid db EFI_GRAPHICS_OUTPUT_PROTOCOL_UUID
 EFI_FILE_MODE_READ = 0x0000000000000001
