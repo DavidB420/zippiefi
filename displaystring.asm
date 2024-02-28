@@ -9,7 +9,7 @@ strcmp:
 mov al,0
 loopReadByteCmp:
 mov bl,byte [rsi]
-cmp rsi,byte [rdi]
+cmp bl,byte [rdi]
 je skipNotMatch
 mov al,1
 skipNotMatch:

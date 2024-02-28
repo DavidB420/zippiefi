@@ -51,7 +51,7 @@ lodsb
 cmp al,'{'
 jne loopFindStartJson
 ;Read and interpret json
-loopReadJson
+loopReadJson:
 lodsb
 cmp al,'"'
 jne skipReadID
@@ -59,8 +59,17 @@ jne skipReadID
 mov rdi,jsonBuffer
 loopCopyTag:
 movsb
-cmp al,'"'
+cmp byte [rsi],'"'
 jne loopCopyTag
+;Compare the tags
+;Check if its countdown
+mov rsi,jsonBuffer
+mov rdi,countdownJSON
+call strcmp
+test al,al
+jnz skipcountdownconfig
+;call resetPC
+skipcountdownconfig:
 skipReadID:
 jmp loopReadJson
 ret
