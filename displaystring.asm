@@ -2,6 +2,45 @@
 ;Display and string
 ;Copyright (C) 2024 David Badiei
 
+;atoi
+;IN: RSI = String (ASCII)
+;OUT: RAX = signed integer value
+atoi:
+;Check if number is negative
+push rbx
+push rsi
+push rdx
+mov bl,0
+cmp byte [rsi],'-'
+jne skipusenegative
+inc bl
+inc rsi
+skipusenegative:
+;Read and convert number
+mov rdx,0
+mov rax,0
+readConvNum:
+lodsb
+test al,al
+jz doneNumConversion
+imul rdx,10
+sub al,30h
+;Add or sub depending on if num should be negative
+test bl,bl
+jz skipnegativeconversion
+sub rdx,rax
+jmp skipositiveconversion
+skipnegativeconversion:
+add rdx,rax
+skipositiveconversion:
+jmp readConvNum
+doneNumConversion:
+xchg rdx,rax
+pop rdx
+pop rsi
+pop rbx
+ret
+
 ;strcmp
 ;IN: RSI = First string (ASCII), RDI = Second string (ASCII)
 ;OUT: AL = 0 (match) 1 (not a match)
@@ -143,7 +182,7 @@ pop rcx
 pop rdx
 ret
 
-;numToString
+;numToString (UTF-16)
 ;IN: r8 = number
 numToString:
 push rax

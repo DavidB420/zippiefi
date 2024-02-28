@@ -9,6 +9,7 @@ section '.text' executable readable
 
 include 'uefi.inc'
 include 'displaystring.asm'
+include 'json.asm'
 
 main:
 ;Save EFI system table that is loaded into rdx
@@ -27,51 +28,6 @@ call centeredPrintString
 call loadEfiOptions
 cli
 jmp $
-ret
-
-loadEfiOptions:
-;Check if we can read json signature
-mov rsi,[efiFileBufferHandle]
-mov rax,qword [rsi]
-mov rbx,0x45495050495A2F2F
-cmp rax,rbx
-je skipfailedefisignature
-sub rsp,8
-mov rsi,errorParsingStr
-call printString
-mov rsi,rebootStr
-call printString
-add rsp,8
-call waitForAnyKey
-call resetPC
-skipfailedefisignature:
-;Find starting of the json
-loopFindStartJson:
-lodsb
-cmp al,'{'
-jne loopFindStartJson
-;Read and interpret json
-loopReadJson:
-lodsb
-cmp al,'"'
-jne skipReadID
-;Copy tag to buffer for comparison
-mov rdi,jsonBuffer
-loopCopyTag:
-movsb
-cmp byte [rsi],'"'
-jne loopCopyTag
-;Compare the tags
-;Check if its countdown
-mov rsi,jsonBuffer
-mov rdi,countdownJSON
-call strcmp
-test al,al
-jnz skipcountdownconfig
-;call resetPC
-skipcountdownconfig:
-skipReadID:
-jmp loopReadJson
 ret
 
 ;initEfiFileSystem
@@ -197,6 +153,7 @@ errorParsingStr du 0x0d, 0x0a, 'Error parsing CONFIG.JSON!', 0xd, 0xa, 0
 rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
 countdownJSON db 'countdown',0
+countdownNum dq 0
 efiSystemTable dq 0
 efiLoadedImage dq 0
 efiImageHandle dq 0
@@ -217,6 +174,7 @@ EFI_LOADED_IMAGE_PROTOCOL_GUID db 0xa1, 0x31, 0x1b, 0x5b, 0x62, 0x95, 0xd2, 0x11
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID db 0x22, 0x5b, 0x4e, 0x96, 0x59, 0x64, 0xd2, 0x11, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b
 EFI_FILE_INFO_ID_GUID db 0x92, 0x6e, 0x57, 0x09, 0x3f, 0x6d, 0xd2, 0x11, 0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b
 efiFileInfoBufferSize dq 128
+jsonTagBuffer: times 256 db 0
 efiFileInfoBuffer: times 128 db 0
 numberBuffer: times 21 db 0
 jsonBuffer: times 21 db 0
