@@ -149,10 +149,8 @@ section '.data' readable writable
 
 welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, 'Please select an option from below', 0
 errorLoadingStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 0
-errorParsingStr du 0x0d, 0x0a, 'Error parsing CONFIG.JSON!', 0xd, 0xa, 0
 rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
-countdownJSON db 'countdown',0
 countdownNum dq 0
 efiSystemTable dq 0
 efiLoadedImage dq 0
@@ -165,19 +163,12 @@ efiFileBufferHandle dq 0
 efiReadSize dq 1216
 efiKeyData dq 0
 efiFileInfo dq 0
-textRows dq 0
-textColumns dq 0
-currentHighestRes dq 0
-currentHighestIndex db 0
-frameBufferPPS dd 0
 EFI_LOADED_IMAGE_PROTOCOL_GUID db 0xa1, 0x31, 0x1b, 0x5b, 0x62, 0x95, 0xd2, 0x11, 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID db 0x22, 0x5b, 0x4e, 0x96, 0x59, 0x64, 0xd2, 0x11, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b
 EFI_FILE_INFO_ID_GUID db 0x92, 0x6e, 0x57, 0x09, 0x3f, 0x6d, 0xd2, 0x11, 0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b
 efiFileInfoBufferSize dq 128
-jsonTagBuffer: times 256 db 0
 efiFileInfoBuffer: times 128 db 0
-numberBuffer: times 21 db 0
-jsonBuffer: times 21 db 0
 blockiouuid db EFI_BLOCK_IO_PROTOCOL_UUID
-gopguid db EFI_GRAPHICS_OUTPUT_PROTOCOL_UUID
 EFI_FILE_MODE_READ = 0x0000000000000001
+include 'include/json.inc'
+include 'include/displaystring.inc'
