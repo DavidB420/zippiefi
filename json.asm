@@ -30,12 +30,7 @@ lodsb
 cmp al,'"'
 jne skipReadID
 push rdi
-;Copy tag to buffer for comparison
-mov rdi,jsonBuffer
-loopCopyTag:
-movsb
-cmp byte [rsi],'"'
-jne loopCopyTag
+call copyToJSONBuffer
 push rsi
 ;Compare the tags
 ;Check if its countdown
@@ -48,13 +43,73 @@ call findAndReadTagsValue
 mov rsi,jsonTagBuffer
 call atoi
 mov qword [countdownNum],rax
-cli
-jmp $
+jmp skipInitBootOption
 skipcountdownconfig:
+;Read and initialize the boot
+call initBootOption
+skipInitBootOption:
 pop rsi
+inc rsi
 pop rdi
 skipReadID:
 jmp loopReadJson
+ret
+
+;copyToJSONBuffer
+;IN: RSI = starting position to read
+copyToJSONBuffer:
+;Clean Buffer
+push ax
+push rcx
+mov rdi,jsonBuffer
+mov rcx,21
+mov al,0
+repe stosb
+pop rcx
+pop ax
+;Copy tag to buffer for comparison
+mov rdi,jsonBuffer
+loopCopyTag:
+movsb
+cmp byte [rsi],'"'
+jne loopCopyTag
+ret
+
+;initBootOption
+;Takes value two qwords behind in the stack
+initBootOption:
+push rax
+;Find starting position of tag value
+mov rsi,qword [rsp+16]
+loopFindTagValueBootOption:
+lodsb
+cmp al,'{'
+je loopFindTagValueBootOption
+add rsi,2
+;Start reading boot option values
+loopBootOptionValues:
+lodsb
+cmp al,'"'
+jne loopBootOptionValues
+call copyToJSONBuffer
+push rsi
+;Compare the tags
+;Check if its drive
+mov rsi,jsonBuffer
+mov rdi,driveJSON
+call strcmp
+test al,al
+jnz skipdriveconfig
+call findAndReadTagsValue
+mov rsi,jsonTagBuffer
+call atoi
+cli
+jmp $
+skipdriveconfig:
+pop rsi
+pop rax
+cli
+jmp $
 ret
 
 ;loadEfiOptions

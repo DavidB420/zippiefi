@@ -6,6 +6,6 @@
   "0": {
     "drive": 0,
     "fn": "bootx64.efi",
-    "type": 0
+    "type": 0 //0 - GRUB, 1 - BOOTMGR (Windows), 2 - Undefined
   }
 }
