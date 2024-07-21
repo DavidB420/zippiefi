@@ -151,6 +151,12 @@ welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, '
 errorLoadingStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 0
 rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
+grubStr du 'GRUB',0
+bootmgrStr du 'Windows NT (BOOTMGR)',0
+undefinedStr du 'Undefined',0
+currentDriveNum dq 0
+currentEFIFileName: times 256 db 0
+currentType db 0
 countdownNum dq 0
 efiSystemTable dq 0
 efiLoadedImage dq 0

@@ -89,6 +89,8 @@ add rsi,2
 ;Start reading boot option values
 loopBootOptionValues:
 lodsb
+cmp al,'}'
+je doneinitBootOption
 cmp al,'"'
 jne loopBootOptionValues
 call copyToJSONBuffer
@@ -103,10 +105,39 @@ jnz skipdriveconfig
 call findAndReadTagsValue
 mov rsi,jsonTagBuffer
 call atoi
-cli
-jmp $
+mov qword [currentDriveNum],rax
 skipdriveconfig:
+;Check if its the efi file name
+mov rsi,jsonBuffer
+mov rdi,fnJSON
+call strcmp
+test al,al
+jnz skipfnconfig
+call findAndReadTagsValue
+mov rcx,256
+mov rsi,jsonTagBuffer
+mov rdi,currentEFIFileName
+repe movsb
+skipfnconfig:
+mov rsi,jsonBuffer
+mov rdi,typeJSON
+call strcmp
+test al,al
+jnz skiptypeconfig
+call findAndReadTagsValue
+mov rsi,jsonTagBuffer
+call atoi
+and rax,0xff
+mov byte [currentType],al
+skiptypeconfig:
 pop rsi
+inc rsi
+mov rcx,256
+mov rdi,jsonTagBuffer
+mov rax,0
+repe stosb
+jmp loopBootOptionValues
+doneinitBootOption:
 pop rax
 cli
 jmp $
