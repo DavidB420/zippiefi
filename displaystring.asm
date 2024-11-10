@@ -41,10 +41,53 @@ pop rsi
 pop rbx
 ret
 
+;itoa
+;IN: RAX = signed integer value, RCX = str length, RDI = pointer to string (UTF-8)
+itoa:
+push rax
+push rsi
+push rdx
+push rcx
+push rbx
+push r8
+mov rbx,10
+mov r8,rcx
+loopgetdigit:
+mov rdx,0
+idiv rbx
+add rdx,30h
+push rdx
+cmp rax,0
+je donegetDigits
+loop loopgetdigit
+donegetDigits:
+test rcx,rcx
+jnz skipStopAtArbitrary
+mov rcx,r8
+jmp skipDontStopAtArbitrary
+skipStopAtArbitrary:
+mov rbx,rcx
+mov rcx,r8
+sub rcx,rbx
+skipDontStopAtArbitrary:
+pop rax
+stosw
+dec rcx
+cmp rcx,0
+jg skipDontStopAtArbitrary
+pop r8
+pop rbx
+pop rcx
+pop rdx
+pop rsi
+pop rax
+ret
+
 ;strcmp
 ;IN: RSI = First string (ASCII), RDI = Second string (ASCII)
 ;OUT: AL = 0 (match) 1 (not a match)
 strcmp:
+push rbx
 mov al,0
 loopReadByteCmp:
 mov bl,byte [rsi]
@@ -56,6 +99,7 @@ inc rsi
 inc rdi
 cmp bl,0
 jne loopReadByteCmp
+pop rbx
 ret
 
 ;getTextMode
@@ -218,5 +262,49 @@ pop rdi
 pop rdx
 pop rcx
 pop rbx
+pop rax
+ret
+
+displayBootOption:
+push rax
+push rsi
+push rbx
+push rcx
+push rdi
+mov al,byte [currentType]
+cmp al,0
+jne skipgruboutput
+mov rsi,grubStr
+mov rcx,4
+skipgruboutput:
+cmp al,1
+jne skipbootmgroutput
+mov rsi,bootmgrStr
+mov rcx,20
+skipbootmgroutput:
+cmp al,2
+jne skipundefinedoutput
+mov rsi,undefinedStr
+mov rcx,9
+skipundefinedoutput:
+mov rdi,displayBootOptionsStr
+repe movsw
+mov rsi,onDriveStr
+mov rcx,10
+repe movsw
+push rdi
+mov rax,[currentDriveNum]
+mov rdi,numberBuffer
+mov rcx,4
+call itoa
+pop rdi
+mov rsi,numberBuffer
+repe movsw
+mov rsi,displayBootOptionsStr
+call centeredPrintString
+pop rdi
+pop rcx
+pop rbx
+pop rsi
 pop rax
 ret

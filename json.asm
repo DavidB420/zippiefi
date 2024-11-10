@@ -20,13 +20,18 @@ call waitForAnyKey
 call resetPC
 skipfailedefisignature:
 ;Find starting of the json
+mov rbx,4
 loopFindStartJson:
 lodsb
 cmp al,'{'
 jne loopFindStartJson
 ;Read and interpret json
 loopReadJson:
+cmp word [rsi],0x007d
+je doneInterpretJson
 lodsb
+cmp al,'}'
+je doneInterpretJsonSection
 cmp al,'"'
 jne skipReadID
 push rdi
@@ -47,13 +52,22 @@ jmp skipInitBootOption
 skipcountdownconfig:
 ;Read and initialize the boot
 call initBootOption
+;Display current boot option
+call displayBootOption
 skipInitBootOption:
 pop rsi
 inc rsi
 pop rdi
 skipReadID:
 jmp loopReadJson
+doneInterpretJsonSection:
+inc rbx
+jmp loopReadJson
+doneInterpretJson:
+cli
+jmp $
 ret
+val db 0
 
 ;copyToJSONBuffer
 ;IN: RSI = starting position to read
@@ -139,8 +153,6 @@ repe stosb
 jmp loopBootOptionValues
 doneinitBootOption:
 pop rax
-cli
-jmp $
 ret
 
 ;loadEfiOptions

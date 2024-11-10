@@ -154,6 +154,7 @@ configFN du 'config.json',0
 grubStr du 'GRUB',0
 bootmgrStr du 'Windows NT (BOOTMGR)',0
 undefinedStr du 'Undefined',0
+onDriveStr du ' on drive ',0
 currentDriveNum dq 0
 currentEFIFileName: times 256 db 0
 currentType db 0
