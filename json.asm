@@ -64,8 +64,6 @@ doneInterpretJsonSection:
 inc rbx
 jmp loopReadJson
 doneInterpretJson:
-cli
-jmp $
 ret
 val db 0
 

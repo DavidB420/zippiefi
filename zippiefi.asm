@@ -25,6 +25,7 @@ call openFile
 mov rsi,welcomeStr
 mov rbx,0
 call centeredPrintString
+;load efi options and highlight first item
 call loadEfiOptions
 cli
 jmp $
