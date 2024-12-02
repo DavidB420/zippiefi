@@ -211,6 +211,16 @@ push rdx
 push rcx
 push rax
 push rsi
+cmp dl,1
+jne skipsethighlight
+mov rdx,qword [efiSystemTable]
+mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
+mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
+mov rdx,0x70
+sub rsp,32
+call rax
+add rsp,32
+skipsethighlight:
 ;Get ConOut in rcx, then use that to get the pointer for the OutputString function in rax 
 mov rdx,qword [efiSystemTable]
 mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
