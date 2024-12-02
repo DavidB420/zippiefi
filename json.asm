@@ -52,7 +52,12 @@ jmp skipInitBootOption
 skipcountdownconfig:
 ;Read and initialize the boot
 call initBootOption
-;Display current boot option
+;Display current boot option while highlighting first option
+mov rdx,0
+cmp rbx,4
+jne skiphighlight
+inc rdx
+skiphighlight:
 call displayBootOption
 skipInitBootOption:
 pop rsi

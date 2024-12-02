@@ -211,15 +211,11 @@ push rdx
 push rcx
 push rax
 push rsi
+push rdx
 cmp dl,1
 jne skipsethighlight
-mov rdx,qword [efiSystemTable]
-mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
-mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
 mov rdx,0x70
-sub rsp,32
-call rax
-add rsp,32
+call setConsoleHighlight
 skipsethighlight:
 ;Get ConOut in rcx, then use that to get the pointer for the OutputString function in rax 
 mov rdx,qword [efiSystemTable]
@@ -230,10 +226,29 @@ xchg rdx,rsi
 sub rsp,32
 call rax
 add rsp,32
+pop rdx
+cmp dl,1
+jne skipremovehighlight
+mov rdx,0x07
+call setConsoleHighlight
+skipremovehighlight:
 pop rsi
 pop rax
 pop rcx
 pop rdx
+ret
+
+;setConsoleHighlight
+;IN: RDX = Color code
+setConsoleHighlight:
+push rdx
+mov rdx,qword [efiSystemTable]
+mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
+mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
+pop rdx
+sub rsp,32
+call rax
+add rsp,32
 ret
 
 ;numToString (UTF-16)
