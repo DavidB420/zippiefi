@@ -26,7 +26,34 @@ mov rsi,welcomeStr
 mov rbx,0
 call centeredPrintString
 ;load efi options and highlight first item
+mov rax,4
 call loadEfiOptions
+add byte [numOfItems],3
+;Wait for user input
+mov rax,4
+loopUserInput:
+push rax
+call waitForAnyKey
+pop rax
+cmp qword [efiKeyData],1
+jne skipgoup
+cmp rax,4
+jle loopUserInput
+dec rax
+jmp updateListHighlight
+skipgoup:
+cmp qword [efiKeyData],2
+jne loopUserInput
+mov bl,byte [numOfItems]
+and rbx,0xff
+cmp rax,rbx
+jge loopUserInput
+inc rax
+updateListHighlight:
+push rax
+call loadEfiOptions
+pop rax
+jmp loopUserInput
 cli
 jmp $
 ret
@@ -171,6 +198,7 @@ efiFileBufferHandle dq 0
 efiReadSize dq 1216
 efiKeyData dq 0
 efiFileInfo dq 0
+numOfItems db 0
 EFI_LOADED_IMAGE_PROTOCOL_GUID db 0xa1, 0x31, 0x1b, 0x5b, 0x62, 0x95, 0xd2, 0x11, 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID db 0x22, 0x5b, 0x4e, 0x96, 0x59, 0x64, 0xd2, 0x11, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b
 EFI_FILE_INFO_ID_GUID db 0x92, 0x6e, 0x57, 0x09, 0x3f, 0x6d, 0xd2, 0x11, 0x8e,0x39,0x00,0xa0,0xc9,0x69,0x72,0x3b

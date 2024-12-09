@@ -4,6 +4,8 @@
 
 ;loadEfiOptions
 loadEfiOptions:
+;Save highlighted option
+mov qword [highlightedRow],rax
 ;Check if we can read json signature
 mov rsi,[efiFileBufferHandle]
 mov rax,qword [rsi]
@@ -54,7 +56,7 @@ skipcountdownconfig:
 call initBootOption
 ;Display current boot option while highlighting first option
 mov rdx,0
-cmp rbx,4
+cmp rbx,qword [highlightedRow]
 jne skiphighlight
 inc rdx
 skiphighlight:
@@ -69,8 +71,11 @@ doneInterpretJsonSection:
 inc rbx
 jmp loopReadJson
 doneInterpretJson:
+dec rbx
+mov byte [numOfItems],bl
 ret
 val db 0
+highlightedRow dq 0
 
 ;copyToJSONBuffer
 ;IN: RSI = starting position to read
