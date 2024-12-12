@@ -166,9 +166,9 @@ shr rcx,1
 sub rax,rcx
 call setCursorPos
 ;Display string using the regular function
-sub rsp,8
+sub rsp,32
 call printString
-add rsp,8
+add rsp,32
 pop rcx
 shl rcx,1
 add rsi,rcx
