@@ -175,7 +175,7 @@ ret
 
 section '.data' readable writable
 
-welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2024 David Badiei', 0, 0xFF, 'Please select an option from below', 0
+welcomeStr du 'ZippiEFI', 0, 0xFF, 'Copyright (C) 2025 David Badiei', 0, 0xFF, 'Please select an option from below', 0
 errorLoadingStr du 'Error loading CONFIG.JSON!', 0xd, 0xa, 0
 rebootStr du 'Press any key to reboot...', 0
 configFN du 'config.json',0
