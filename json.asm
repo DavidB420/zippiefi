@@ -12,12 +12,12 @@ mov rax,qword [rsi]
 mov rbx,0x45495050495A2F2F
 cmp rax,rbx
 je skipfailedefisignature
-sub rsp,8
+;sub rsp,8
 mov rsi,errorParsingStr
 call printString
 mov rsi,rebootStr
 call printString
-add rsp,8
+;add rsp,8
 call waitForAnyKey
 call resetPC
 skipfailedefisignature:

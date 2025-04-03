@@ -166,9 +166,7 @@ shr rcx,1
 sub rax,rcx
 call setCursorPos
 ;Display string using the regular function
-sub rsp,32
 call printString
-add rsp,32
 pop rcx
 shl rcx,1
 add rsi,rcx
@@ -205,7 +203,7 @@ pop rax
 ret
 
 ;printString
-;IN: RSI = string pointer
+;IN: RSI = string pointer, DL = Highlight text
 printString:
 push rdx
 push rcx
@@ -217,20 +215,20 @@ jne skipsethighlight
 mov rdx,0x70
 call setConsoleHighlight
 skipsethighlight:
-;Get ConOut in rcx, then use that to get the pointer for the OutputString function in rax 
-mov rdx,qword [efiSystemTable]
-mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
-mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.OutputString]
+;Get ConOut in rcx, then use that to get the pointer for the OutputString function in rax
+mov rcx,[efiSystemTable]
+mov rcx,[rcx+EFI_SYSTEM_TABLE.ConOut]
 xchg rdx,rsi
-;Setup shadow space for GPRs
 sub rsp,32
-call rax
+call qword [rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.OutputString]
 add rsp,32
 pop rdx
 cmp dl,1
 jne skipremovehighlight
-mov rdx,0x07
+mov rdx,7
+sub rsp,32
 call setConsoleHighlight
+add rsp,32
 skipremovehighlight:
 pop rsi
 pop rax
@@ -241,14 +239,13 @@ ret
 ;setConsoleHighlight
 ;IN: RDX = Color code
 setConsoleHighlight:
-push rdx
-mov rdx,qword [efiSystemTable]
-mov rcx,[rdx+EFI_SYSTEM_TABLE.ConOut]
-mov rax,[rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
-pop rdx
+push rcx
+mov rcx,[efiSystemTable]
+mov rcx,[rcx+EFI_SYSTEM_TABLE.ConOut]
 sub rsp,32
-call rax
+call qword [rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
 add rsp,32
+pop rcx
 ret
 
 ;numToString (UTF-16)
@@ -325,8 +322,10 @@ call itoa
 pop rdi
 mov rsi,numberBuffer
 repe movsw
+add rsp,8
 mov rsi,displayBootOptionsStr
 call centeredPrintString
+sub rsp,8
 pop rdi
 pop rcx
 pop rbx
