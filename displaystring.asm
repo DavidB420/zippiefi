@@ -236,17 +236,31 @@ pop rcx
 pop rdx
 ret
 
+var_8 dq 0
+arg_0 db 0
 ;setConsoleHighlight
 ;IN: RDX = Color code
 setConsoleHighlight:
-push rcx
-mov rcx,[efiSystemTable]
-mov rcx,[rcx+EFI_SYSTEM_TABLE.ConOut]
-sub rsp,32
-call qword [rcx+SIMPLE_TEXT_OUTPUT_INTERFACE.SetAttribute]
-add rsp,32
-pop rcx
-ret
+push    rbp
+mov     rbp, rsp
+sub     rsp, 30h
+mov     eax, edx
+mov     byte [arg_0], al
+mov     rax, efiSystemTable
+mov     rax, [rax]
+mov     qword [var_8], rax
+mov     rax, qword [var_8]
+mov     rax, [rax+40h]
+mov     r8, [rax+28h]
+movzx   edx, byte [arg_0]
+mov     rax, qword [var_8]
+mov     rax, [rax+40h]
+mov     rcx, rax
+call    r8
+nop
+add     rsp, 30h
+pop     rbp
+retn
 
 ;numToString (UTF-16)
 ;IN: r8 = number
